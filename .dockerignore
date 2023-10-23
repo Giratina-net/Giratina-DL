@@ -1,0 +1,5 @@
+.env
+download
+modules/__pycache__
+test.py
+tinydb

@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: giratina-dl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: giratina-dl
+  template:
+    metadata:
+      labels:
+        app: giratina-dl
+    spec:
+      containers:
+      - name: giratina-dl
+        image: ghcr.io/giratina-net/giratina-dl:latest
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /app/tinydb
+          name: giratina-dl-pvc
+        env:
+          - name: GDL_API_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: GDL_API_KEY
+          - name: S3_DOMAIN
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: S3_DOMAIN        
+          - name: S3_ENDPOINT_URL
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: S3_ENDPOINT_URL
+          - name: S3_REGION
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: S3_REGION
+          - name: S3_BUDGET_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: S3_BUDGET_NAME
+          - name: S3_ACCESS_KEY_ID
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: S3_ACCESS_KEY_ID
+          - name: S3_SECRET_ACCESS_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: S3_SECRET_ACCESS_KEY
+          - name: KUTT_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: KUTT_HOST
+          - name: KUTT_DOMAIN
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: KUTT_DOMAIN
+          - name: KUTT_API_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: giratina-dl-env
+                key: KUTT_API_KEY
+        ports:
+        - containerPort: 3000
+      volumes:
+      - name: giratina-dl-pvc
+        persistentVolumeClaim:
+          claimName: giratina-dl-pvc
+      imagePullSecrets: 
+      - name: regcred
