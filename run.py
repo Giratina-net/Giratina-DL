@@ -76,4 +76,4 @@ def status():
     return Response(json.dumps(r), status=200, mimetype='application/json')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=3000)
