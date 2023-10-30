@@ -43,7 +43,7 @@ def create():
         return Response(json.dumps({"message": "Unsupported type"}), status=400, mimetype='application/json')
     # urlがサポートされていない場合
     if not chkurl(url):
-        return {"message": "Unsupported site"}
+        return Response(json.dumps({"message": "Unsupported url"}), status=400, mimetype='application/json')
     # task_idの生成
     task_id = secrets.token_hex(8)
     # taskの追加
