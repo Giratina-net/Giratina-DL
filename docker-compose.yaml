@@ -1,9 +1,23 @@
 version: "2.0"
 services:
-  app:
+  giratina-dl:
     build:
       context: .
     env_file: .env
     ports:
       - "3000:3000"
     restart: always
+
+  postgres:
+    image: bitnami/postgresql:latest
+    env_file: .env
+    ports:
+      - "5432:5432"
+    restart: always
+    hostname: postgres
+    volumes:
+      - postgresql:/bitnami/postgresql
+
+volumes:
+  postgresql:
+    driver: local

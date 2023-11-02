@@ -16,65 +16,81 @@ spec:
       - name: giratina-dl
         image: ghcr.io/giratina-net/giratina-dl:latest
         imagePullPolicy: Always
-        volumeMounts:
-        - mountPath: /app/tinydb
-          name: giratina-dl-pvc
         env:
-          - name: GDL_API_KEY
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: GDL_API_KEY
-          - name: S3_DOMAIN
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: S3_DOMAIN        
-          - name: S3_ENDPOINT_URL
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: S3_ENDPOINT_URL
-          - name: S3_REGION
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: S3_REGION
-          - name: S3_BUDGET_NAME
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: S3_BUDGET_NAME
-          - name: S3_ACCESS_KEY_ID
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: S3_ACCESS_KEY_ID
-          - name: S3_SECRET_ACCESS_KEY
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: S3_SECRET_ACCESS_KEY
-          - name: KUTT_HOST
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: KUTT_HOST
-          - name: KUTT_DOMAIN
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: KUTT_DOMAIN
-          - name: KUTT_API_KEY
-            valueFrom:
-              configMapKeyRef:
-                name: giratina-dl-env
-                key: KUTT_API_KEY
+        - name: GDL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              key: GDL_API_KEY
+              name: giratina-dl-secrets
+        - name: S3_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              key: S3_DOMAIN
+              name: giratina-dl-secrets
+        - name: S3_ENDPOINT_URL
+          valueFrom:
+            configMapKeyRef:
+              key: S3_ENDPOINT_URL
+              name: giratina-dl-secrets
+        - name: S3_REGION
+          valueFrom:
+            configMapKeyRef:
+              key: S3_REGION
+              name: giratina-dl-secrets
+        - name: S3_BUDGET_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: S3_BUDGET_NAME
+              name: giratina-dl-secrets
+        - name: S3_ACCESS_KEY_ID
+          valueFrom:
+            configMapKeyRef:
+              key: S3_ACCESS_KEY_ID
+              name: giratina-dl-secrets
+        - name: S3_SECRET_ACCESS_KEY
+          valueFrom:
+            configMapKeyRef:
+              key: S3_SECRET_ACCESS_KEY
+              name: giratina-dl-secrets
+        - name: KUTT_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: KUTT_HOST
+              name: giratina-dl-secrets
+        - name: KUTT_DOMAIN
+          valueFrom:
+            configMapKeyRef:
+              key: KUTT_DOMAIN
+              name: giratina-dl-secrets
+        - name: KUTT_API_KEY
+          valueFrom:
+            configMapKeyRef:
+              key: KUTT_API_KEY
+              name: giratina-dl-secrets
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_HOST
+              name: giratina-dl-secretsrets
+        - name: POSTGRES_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_USERNAME
+              name: giratina-dl-secrets
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_PASSWORD
+              name: giratina-dl-secrets
+        - name: POSTGRES_DATABASE 
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_DATABASE
+              name: giratina-dl-secrets
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              key: POSTGRES_PORT
+              name: giratina-dl-secrets
         ports:
         - containerPort: 3000
-      volumes:
-      - name: giratina-dl-pvc
-        persistentVolumeClaim:
-          claimName: giratina-dl-pvc
-      imagePullSecrets: 
-      - name: regcred

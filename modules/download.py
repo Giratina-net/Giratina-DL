@@ -3,28 +3,31 @@ import shutil
 import datetime
 from zoneinfo import ZoneInfo
 from yt_dlp import YoutubeDL
-from modules.db import DB
+from modules.database import DB
+from modules.kutt import kutt
 from modules.ydlop import get_ydlop
 from modules.s3 import upload_file, get_presigned_url
-from modules.kutt import kutt
 from modules.edit_mp3 import edit_song_metadata, edit_album_metadata
 
-def get_metadata(task_id, url, request_type):
+def get_metadata(task_id, url, request_type, metadata_only=False):
     # メタデータ取得
     try:
         metadata = YoutubeDL({"playlistend": 1}).extract_info(url, download=False)
         sanitized_title = metadata["title"].replace('Album - ', '').replace('/', '／')
         #taskの更新
-        task_data = DB().get_task(task_id=task_id)[0]
+        task_data = DB.get_task(task_id=task_id)
         task_data["media"] = {
             "title": sanitized_title,
             "request_type": request_type,
             "url": url,
             "metadata": metadata
         }
-        DB().update_task(task_id=task_id, data=task_data)
+        if metadata_only  == True:
+            task_data["status"] = "success"
+            task_data["complated_time"] = datetime.datetime.now(ZoneInfo("Asia/Tokyo")).isoformat()
+        DB.update_task(task_id=task_id, data=task_data)
     except Exception as e:
-        print(e)
+        print("メタデータの取得に失敗しました。")
         return {"status": "error", "message": "Metadata cannot be obtained"}
 
 def download_media(task_id, url, request_type):
@@ -38,7 +41,7 @@ def download_media(task_id, url, request_type):
         YoutubeDL( get_ydlop(request_type=request_type, working_directory=working_directory) ).download([url])
         
         # メディアファイルの取得
-        task_data = DB().get_task(task_id=task_id)[0]
+        task_data = DB.get_task(task_id=task_id)
         media_title = task_data["media"]["title"]
         global filename
         filename = working_directory + "/" + media_title + "." + request_type
@@ -68,7 +71,7 @@ def download_media(task_id, url, request_type):
         # レスポンスの作成
         return {"status": "success", "complated_time": complated_time, "download_url": {"short": download_url_short, "raw": download_url_raw}}
     except Exception as e:
-        print(e)
+        print(f"不明なエラー: {str(e)}")
         return {"status": "error", "message": "Unknown error"}
     finally:
         shutil.rmtree(working_directory)
@@ -77,6 +80,6 @@ def download_task(task_id, url, request_type):
     # ダウンロード
     download_result = download_media(task_id=task_id, url=url, request_type=request_type)
     # taskの更新
-    task_data = DB().get_task(task_id=task_id)[0]
+    task_data = DB.get_task(task_id=task_id)
     task_data.update(download_result)
-    DB().update_task(task_id=task_id, data=task_data)
+    DB.update_task(task_id=task_id, data=task_data)

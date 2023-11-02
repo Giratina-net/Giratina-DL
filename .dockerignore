@@ -2,4 +2,4 @@
 download
 modules/__pycache__
 test.py
-tinydb
+.DS_Store

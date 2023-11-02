@@ -1,3 +1,6 @@
+#データベースの確認
+import time
+import modules.startup
 import os
 import json
 import secrets
@@ -6,13 +9,9 @@ from flask_cors import CORS
 from flask import Flask, Response, request
 import modules.env as env
 from multiprocessing import Process
-from modules.db import DB
 from modules.chkurl import chkurl
 from modules.download import get_metadata, download_task
-
-# ダウンロード先のディレクトリを作成
-os.makedirs("download", exist_ok=True)
-os.makedirs("tinydb", exist_ok=True)
+from modules.database import DB
 
 # GDL_API_KEYの生成
 if env.GDL_API_KEY == None:
@@ -28,7 +27,7 @@ def index():
 
 @app.route('/v1/ydl/create', methods=['GET'])
 def create():
-    url,request_type,x_api_key = request.args.get("url"),request.args.get("type"),request.headers.get("X-API-KEY")
+    url,request_type,metadata_only,x_api_key = request.args.get("url"),request.args.get("type"),request.args.get("metadata_only"),request.headers.get("X-API-KEY")
     # X-API-KEYが指定されていない場合
     if x_api_key != env.GDL_API_KEY:
         return Response(json.dumps({"message": "X-API-KEY is invalid"}), status=401, mimetype='application/json')
@@ -47,10 +46,14 @@ def create():
     # task_idの生成
     task_id = secrets.token_hex(8)
     # taskの追加
-    r = DB().add_task(task_id=task_id)
+    r = DB.add_task(task_id=task_id)
     # ダウンロード処理の開始
-    Process(target=get_metadata, args=(task_id, url, request_type)).start()
-    Process(target=download_task, args=(task_id, url, request_type)).start()
+    if not metadata_only  in  ["true", "True", "TRUE", "1", "t", "T", "y", "Y", "yes", "Yes", "YES"]:  
+        Process(target=download_task, args=(task_id, url, request_type)).start()
+        metadata_only = False
+    else:
+        metadata_only = True
+    Process(target=get_metadata, args=(task_id, url, request_type, metadata_only)).start()
     return Response(json.dumps(r), status=200, mimetype='application/json')
 
 @app.route('/v1/ydl/status', methods=['GET'])
@@ -64,13 +67,14 @@ def status():
         return Response(json.dumps({"message": "task_id is not specified"}), status=400, mimetype='application/json')
     # task_idが存在しない場合
     try:
-        r=DB().get_task(task_id=task_id)[0]
+        r=DB.get_task(task_id=task_id)
     except:
         return Response(json.dumps({"message": "task_id is not found"}), status=400, mimetype='application/json')
-    # mediaを後方に移動
-    r=OrderedDict(r)
-    r.move_to_end("media")
-    # statusがエラーの場合    
+    # mediaを後方に移動 
+    if "media" in r:
+        r=OrderedDict(r)
+        r.move_to_end("media")
+    # # statusがエラーの場合    
     if r["status"] == "error":
         return Response(json.dumps(r), status=400, mimetype='application/json')
     return Response(json.dumps(r), status=200, mimetype='application/json')
