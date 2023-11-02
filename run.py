@@ -4,6 +4,7 @@ import modules.startup
 import os
 import json
 import secrets
+from waitress import serve
 from collections import OrderedDict
 from flask_cors import CORS
 from flask import Flask, Response, request
@@ -27,7 +28,11 @@ def index():
 
 @app.route('/v1/ydl/create', methods=['GET'])
 def create():
-    url,request_type,metadata_only,x_api_key = request.args.get("url"),request.args.get("type"),request.args.get("metadata_only"),request.headers.get("X-API-KEY")
+    url = request.args.get("url")
+    request_type = request.args.get("type")
+    metadata_only = request.args.get("metadata_only")
+    x_api_key = request.headers.get("X-API-KEY")
+    
     # X-API-KEYが指定されていない場合
     if x_api_key != env.GDL_API_KEY:
         return Response(json.dumps({"message": "X-API-KEY is invalid"}), status=401, mimetype='application/json')
@@ -58,7 +63,8 @@ def create():
 
 @app.route('/v1/ydl/status', methods=['GET'])
 def status():
-    task_id,x_api_key = request.args.get("task_id"),request.headers.get("X-API-KEY")
+    task_id = request.args.get("task_id")
+    x_api_key = request.headers.get("X-API-KEY")
     # X-API-KEYが指定されていない場合
     if x_api_key != env.GDL_API_KEY:
         return Response(json.dumps({"message": "X-API-KEY is invalid"}), status=401, mimetype='application/json')
@@ -79,5 +85,13 @@ def status():
         return Response(json.dumps(r), status=400, mimetype='application/json')
     return Response(json.dumps(r), status=200, mimetype='application/json')
 
+@app.errorhandler(500)
+def error_handler_500(error):
+    return Response(json.dumps({"message": "Internal Server Error"}), status=500, mimetype='application/json')
+
+@app.errorhandler(404)
+def error_handler_404(error):
+    return Response(json.dumps("Page Not Found"), status=404, mimetype='text/plain')
+    
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000)
+    serve(app, host='0.0.0.0', port=3000, threads=10)
