@@ -13,7 +13,9 @@ def get_metadata(task_id, url, request_type, metadata_only=False):
     # メタデータ取得
     try:
         metadata = YoutubeDL({"playlistend": 1}).extract_info(url, download=False)
-        sanitized_title = metadata["title"].replace('Album - ', '').replace('/', '⧸')
+        sanitized_title = metadata["title"].replace('Album - ', '')
+        sanitized_title = sanitized_title.replace('/', '⧸')
+        sanitized_title = sanitized_title.replace(':', '：')
         #taskの更新
         task_data = DB.get_task(task_id=task_id)
         task_data["media"] = {
