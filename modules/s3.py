@@ -12,7 +12,7 @@ s3 = boto3.client(
 # S3にアップロード
 def upload_file(filename,uploadname):
     try:
-        s3.upload_file(filename, env.S3_BUDGET_NAME, filename)
+        s3.upload_file(filename, env.S3_BUDGET_NAME, uploadname)
     except Exception as e:
         print("S3へのアップロードに失敗しました。")
         return False
