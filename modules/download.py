@@ -47,7 +47,7 @@ def download_media(task_id, url, request_type):
         task_data = DB.get_task(task_id=task_id)
         media_title = task_data["media"]["title"]
         global filename
-        filename = working_directory + "/" + media_title + "." + request_type
+        filename = "/" + media_title + "." + request_type
         if request_type == "mp3":
             edit_song_metadata(filename)
         elif request_type == "mp3_album":
