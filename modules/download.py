@@ -47,19 +47,20 @@ def download_media(task_id, url, request_type):
         task_data = DB.get_task(task_id=task_id)
         media_title = task_data["media"]["title"]
         global filename
-        filename = "/" + media_title + "." + request_type
+        filename = working_directory + "/" + media_title + "." + request_type
         if request_type == "mp3":
             edit_song_metadata(filename)
         elif request_type == "mp3_album":
             filename = working_directory + "/" + media_title + ".zip"
+            uploadname = media_title + ".zip"
             media_dir = os.path.join(working_directory, media_title)
             edit_album_metadata(media_dir)
             shutil.make_archive(os.path.join(working_directory, media_title), 'zip', media_dir)
             shutil.rmtree(media_dir)
         
         # S3にアップロード
-        is_uploaded = upload_file(filename)
-        download_url_raw = get_presigned_url(filename)
+        is_uploaded = upload_file(filename,uploadname)
+        download_url_raw = get_presigned_url(uploadname)
         
         if not is_uploaded or not download_url_raw:
             return {"status": "error", "message": "S3 upload error"}
